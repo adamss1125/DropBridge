@@ -1,0 +1,15 @@
+import sharp from "sharp";
+import fs from "node:fs/promises";
+const svg = `<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="8" width="240" height="240" rx="60" fill="#B5C7FF"/><path d="M72 184L181 75M92 73h91v91" fill="none" stroke="#1A2543" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+await fs.mkdir("build", { recursive: true });
+const png = await sharp(Buffer.from(svg)).png().toBuffer();
+await fs.writeFile("build/icon.png", png);
+const header = Buffer.alloc(22);
+header.writeUInt16LE(1, 2);
+header.writeUInt16LE(1, 4);
+header[8] = 0;
+header.writeUInt16LE(1, 10);
+header.writeUInt16LE(32, 12);
+header.writeUInt32LE(png.length, 14);
+header.writeUInt32LE(22, 18);
+await fs.writeFile("build/icon.ico", Buffer.concat([header, png]));
